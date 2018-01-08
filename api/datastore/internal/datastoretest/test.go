@@ -32,6 +32,9 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		}
 	}()
 
+	testApp.SetDefaults()
+	testRoute.AppID = testApp.ID
+
 	ctx := context.Background()
 
 	call := new(models.Call)
@@ -332,12 +335,14 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		}
 
 		// Testing get app
-		_, err = ds.GetApp(ctx, "")
-		if err != models.ErrDatastoreEmptyAppName {
-			t.Fatalf("Test GetApp: expected error to be %v, but it was %s", models.ErrDatastoreEmptyAppName, err)
+		_, err = ds.GetApp(ctx, &models.App{})
+		if err != models.ErrDatastoreEmptyApp {
+			t.Fatalf("Test GetApp: expected error to be %v, but it was %s", models.ErrDatastoreEmptyApp, err)
 		}
 
-		app, err := ds.GetApp(ctx, testApp.Name)
+		ga := &models.App{Name: testApp.Name}
+		ga.SetDefaults()
+		app, err := ds.GetApp(ctx, ga)
 		if err != nil {
 			t.Fatalf("Test GetApp: error: %s", err)
 		}
@@ -361,7 +366,9 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		a2 := *testApp
 		a3 := *testApp
 		a2.Name = "Testa"
+		a2.SetDefaults()
 		a3.Name = "Testb"
+		a3.SetDefaults()
 		if _, err = ds.InsertApp(ctx, &a2); err != nil {
 			t.Fatal(err)
 		}
@@ -393,7 +400,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 
 		a4 := *testApp
 		a4.Name = "Abcdefg" // < /test lexicographically, but not in length
-
+		a4.SetDefaults()
 		if _, err = ds.InsertApp(ctx, &a4); err != nil {
 			t.Fatal(err)
 		}
@@ -418,16 +425,16 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		//}
 
 		// Testing app delete
-		err = ds.RemoveApp(ctx, "")
-		if err != models.ErrDatastoreEmptyAppName {
-			t.Fatalf("Test RemoveApp: expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyAppName, err)
+		err = ds.RemoveApp(ctx, &models.App{})
+		if err != models.ErrDatastoreEmptyApp {
+			t.Fatalf("Test RemoveApp: expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyApp, err)
 		}
 
-		err = ds.RemoveApp(ctx, testApp.Name)
+		err = ds.RemoveApp(ctx, testApp)
 		if err != nil {
 			t.Fatalf("Test RemoveApp: error: %s", err)
 		}
-		app, err = ds.GetApp(ctx, testApp.Name)
+		app, err = ds.GetApp(ctx, testApp)
 		if err != models.ErrAppsNotFound {
 			t.Fatalf("Test GetApp(removed): expected error `%v`, but it was `%v`", models.ErrAppsNotFound, err)
 		}
@@ -481,17 +488,19 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 
 		// Testing get
 		{
-			_, err = ds.GetRoute(ctx, "a", "")
+			a := &models.App{Name: "a"}
+			a.SetDefaults()
+			_, err = ds.GetRoute(ctx, a, "")
 			if err != models.ErrDatastoreEmptyRoutePath {
 				t.Fatalf("Test GetRoute(empty route path): expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyRoutePath, err)
 			}
 
-			_, err = ds.GetRoute(ctx, "", "a")
+			_, err = ds.GetRoute(ctx, &models.App{}, "a")
 			if err != models.ErrDatastoreEmptyAppName {
 				t.Fatalf("Test GetRoute(empty app name): expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyAppName, err)
 			}
 
-			route, err := ds.GetRoute(ctx, testApp.Name, testRoute.Path)
+			route, err := ds.GetRoute(ctx, testApp, testRoute.Path)
 			if err != nil {
 				t.Fatalf("Test GetRoute: unexpected error %v", err)
 			}
@@ -504,6 +513,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		{
 			// Update some fields, and add 3 configs and 3 headers.
 			updated, err := ds.UpdateRoute(ctx, &models.Route{
+				AppID:   testApp.ID,
 				AppName: testRoute.AppName,
 				Path:    testRoute.Path,
 				Timeout: 2,
@@ -523,6 +533,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			}
 			expected := &models.Route{
 				// unchanged
+				AppID:       testApp.ID,
 				AppName:     testRoute.AppName,
 				Path:        testRoute.Path,
 				Image:       "fnproject/hello",
@@ -550,6 +561,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 
 			// Update a config var, remove another. Add one Header, remove another.
 			updated, err = ds.UpdateRoute(ctx, &models.Route{
+				AppID:   testRoute.AppID,
 				AppName: testRoute.AppName,
 				Path:    testRoute.Path,
 				Config: map[string]string{
@@ -568,6 +580,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			expected = &models.Route{
 				// unchanged
 				AppName:     testRoute.AppName,
+				AppID:       testRoute.AppID,
 				Path:        testRoute.Path,
 				Image:       "fnproject/hello",
 				Type:        "sync",
@@ -592,7 +605,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		}
 
 		// Testing list routes
-		routes, err := ds.GetRoutesByApp(ctx, testApp.Name, &models.RouteFilter{PerPage: 1})
+		routes, err := ds.GetRoutesByApp(ctx, testApp, &models.RouteFilter{PerPage: 1})
 		if err != nil {
 			t.Fatalf("Test GetRoutesByApp: unexpected error %v", err)
 		}
@@ -605,7 +618,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			t.Fatalf("Test GetRoutes: expected `app.Name` to be `%s` but it was `%s`", testRoute.Path, routes[0].Path)
 		}
 
-		routes, err = ds.GetRoutesByApp(ctx, testApp.Name, &models.RouteFilter{Image: testRoute.Image, PerPage: 1})
+		routes, err = ds.GetRoutesByApp(ctx, testApp, &models.RouteFilter{Image: testRoute.Image, PerPage: 1})
 		if err != nil {
 			t.Fatalf("Test GetRoutesByApp: unexpected error %v", err)
 		}
@@ -618,7 +631,9 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			t.Fatalf("Test GetRoutesByApp: expected `route.Path` to be `%s` but it was `%s`", testRoute.Path, routes[0].Path)
 		}
 
-		routes, err = ds.GetRoutesByApp(ctx, "notreal", &models.RouteFilter{PerPage: 1})
+		nre := &models.App{Name: "notreal"}
+		nre.SetDefaults()
+		routes, err = ds.GetRoutesByApp(ctx, nre, &models.RouteFilter{PerPage: 1})
 		if err != nil {
 			t.Fatalf("Test GetRoutesByApp: error: %s", err)
 		}
@@ -628,7 +643,9 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 
 		// test pagination stuff
 		r2 := *testRoute
+		r2.AppID = testApp.ID
 		r3 := *testRoute
+		r2.AppID = testApp.ID
 		r2.Path = "/testa"
 		r3.Path = "/testb"
 
@@ -639,7 +656,9 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			t.Fatal(err)
 		}
 
-		routes, err = ds.GetRoutesByApp(ctx, testApp.Name, &models.RouteFilter{PerPage: 1})
+		//pga := &models.App{Name: testApp.Name}
+		//pga.SetDefaults()
+		routes, err = ds.GetRoutesByApp(ctx, testApp, &models.RouteFilter{PerPage: 1})
 		if err != nil {
 			t.Fatalf("Test GetRoutesByApp: error: %s", err)
 		}
@@ -649,7 +668,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			t.Fatalf("Test GetRoutesByApp: expected `route.Path` to be `%s` but it was `%s`", testRoute.Path, routes[0].Path)
 		}
 
-		routes, err = ds.GetRoutesByApp(ctx, testApp.Name, &models.RouteFilter{PerPage: 2, Cursor: routes[0].Path})
+		routes, err = ds.GetRoutesByApp(ctx, testApp, &models.RouteFilter{PerPage: 2, Cursor: routes[0].Path})
 		if err != nil {
 			t.Fatalf("Test GetRoutesByApp: error: %s", err)
 		}
@@ -668,7 +687,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			t.Fatal(err)
 		}
 
-		routes, err = ds.GetRoutesByApp(ctx, testApp.Name, &models.RouteFilter{PerPage: 100})
+		routes, err = ds.GetRoutesByApp(ctx, testApp, &models.RouteFilter{PerPage: 100})
 		if err != nil {
 			t.Fatalf("Test GetRoutesByApp: error: %s", err)
 		}
@@ -682,22 +701,24 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		// TODO test prefix filtering
 
 		// Testing route delete
-		err = ds.RemoveRoute(ctx, "", "")
+		err = ds.RemoveRoute(ctx, &models.App{}, "")
 		if err != models.ErrDatastoreEmptyAppName {
 			t.Fatalf("Test RemoveRoute(empty app name): expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyAppName, err)
 		}
 
-		err = ds.RemoveRoute(ctx, "a", "")
+		//ra := &models.App{Name: "a"}
+		//ra.SetDefaults()
+		err = ds.RemoveRoute(ctx, testApp, "")
 		if err != models.ErrDatastoreEmptyRoutePath {
 			t.Fatalf("Test RemoveRoute(empty route path): expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyRoutePath, err)
 		}
 
-		err = ds.RemoveRoute(ctx, testRoute.AppName, testRoute.Path)
+		err = ds.RemoveRoute(ctx, testApp, testRoute.Path)
 		if err != nil {
 			t.Fatalf("Test RemoveApp: unexpected error: %v", err)
 		}
 
-		route, err := ds.GetRoute(ctx, testRoute.AppName, testRoute.Path)
+		route, err := ds.GetRoute(ctx, testApp, testRoute.Path)
 		if err != nil && err != models.ErrRoutesNotFound {
 			t.Fatalf("Test GetRoute: expected error `%v`, but it was `%v`", models.ErrRoutesNotFound, err)
 		}
@@ -706,6 +727,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		}
 
 		_, err = ds.UpdateRoute(ctx, &models.Route{
+			AppID:   testApp.ID,
 			AppName: testRoute.AppName,
 			Path:    testRoute.Path,
 			Image:   "test",

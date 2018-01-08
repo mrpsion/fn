@@ -10,7 +10,7 @@ type Datastore interface {
 	// GetApp gets an App by name.
 	// Returns ErrDatastoreEmptyAppName for empty appName.
 	// Returns ErrAppsNotFound if no app is found.
-	GetApp(ctx context.Context, appName string) (*App, error)
+	GetApp(ctx context.Context, app *App) (*App, error)
 
 	// GetApps gets a slice of Apps, optionally filtered by name.
 	// Missing filter or empty name will match all Apps.
@@ -34,11 +34,11 @@ type Datastore interface {
 	// Returns ErrDatastoreEmptyAppName when appName is empty, and ErrDatastoreEmptyRoutePath when
 	// routePath is empty.
 	// Returns ErrRoutesNotFound when no matching route is found.
-	GetRoute(ctx context.Context, appName, routePath string) (*Route, error)
+	GetRoute(ctx context.Context, app *App, routePath string) (*Route, error)
 
 	// GetRoutesByApp gets a slice of routes for a appName, optionally filtering on filter (filter.AppName is ignored).
 	// Returns ErrDatastoreEmptyAppName if appName is empty.
-	GetRoutesByApp(ctx context.Context, appName string, filter *RouteFilter) ([]*Route, error)
+	GetRoutesByApp(ctx context.Context, app *App, filter *RouteFilter) ([]*Route, error)
 
 	// InsertRoute inserts a route. Returns ErrDatastoreEmptyRoute when route is nil, and ErrDatastoreEmptyAppName
 	// or ErrDatastoreEmptyRoutePath for empty AppName or Path.
@@ -51,7 +51,7 @@ type Datastore interface {
 
 	// RemoveRoute removes a route. Returns ErrDatastoreEmptyAppName when appName is empty, and
 	// ErrDatastoreEmptyRoutePath when routePath is empty. Returns ErrRoutesNotFound when no route exists.
-	RemoveRoute(ctx context.Context, appName, routePath string) error
+	RemoveRoute(ctx context.Context, app *App, routePath string) error
 
 	// InsertCall inserts a call into the datastore, it will error if the call already
 	// exists.
@@ -63,7 +63,7 @@ type Datastore interface {
 	UpdateCall(ctx context.Context, from *Call, to *Call) error
 
 	// GetCall returns a call at a certain id and app name.
-	GetCall(ctx context.Context, appName, callID string) (*Call, error)
+	GetCall(ctx context.Context, appID, callID string) (*Call, error)
 
 	// GetCalls returns a list of calls that satisfy the given CallFilter. If no
 	// calls exist, an empty list and a nil error are returned.
