@@ -470,7 +470,7 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 				t.Fatalf("Test InsertRoute(nil): expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyRoute, err)
 			}
 
-			_, err = ds.InsertRoute(ctx, &models.Route{AppName: "notreal", Path: "/test"})
+			_, err = ds.InsertRoute(ctx, &models.Route{AppID: "notreal", Path: "/test"})
 			if err != models.ErrAppsNotFound {
 				t.Fatalf("Test InsertRoute: expected error `%v`, but it was `%v`", models.ErrAppsNotFound, err)
 			}
@@ -514,7 +514,6 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			// Update some fields, and add 3 configs and 3 headers.
 			updated, err := ds.UpdateRoute(ctx, &models.Route{
 				AppID:   testApp.ID,
-				AppName: testRoute.AppName,
 				Path:    testRoute.Path,
 				Timeout: 2,
 				Config: map[string]string{
@@ -534,7 +533,6 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			expected := &models.Route{
 				// unchanged
 				AppID:       testApp.ID,
-				AppName:     testRoute.AppName,
 				Path:        testRoute.Path,
 				Image:       "fnproject/hello",
 				Type:        "sync",
@@ -561,9 +559,8 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 
 			// Update a config var, remove another. Add one Header, remove another.
 			updated, err = ds.UpdateRoute(ctx, &models.Route{
-				AppID:   testRoute.AppID,
-				AppName: testRoute.AppName,
-				Path:    testRoute.Path,
+				AppID: testRoute.AppID,
+				Path:  testRoute.Path,
 				Config: map[string]string{
 					"FIRST":  "first",
 					"SECOND": "",
@@ -579,7 +576,6 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 			}
 			expected = &models.Route{
 				// unchanged
-				AppName:     testRoute.AppName,
 				AppID:       testRoute.AppID,
 				Path:        testRoute.Path,
 				Image:       "fnproject/hello",
@@ -727,10 +723,9 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 		}
 
 		_, err = ds.UpdateRoute(ctx, &models.Route{
-			AppID:   testApp.ID,
-			AppName: testRoute.AppName,
-			Path:    testRoute.Path,
-			Image:   "test",
+			AppID: testApp.ID,
+			Path:  testRoute.Path,
+			Image: "test",
 		})
 		if err != models.ErrRoutesNotFound {
 			t.Fatalf("Test UpdateRoute inexistent: expected error to be `%v`, but it was `%v`", models.ErrRoutesNotFound, err)
@@ -743,7 +738,6 @@ var testApp = &models.App{
 }
 
 var testRoute = &models.Route{
-	AppName:     testApp.Name,
 	Path:        "/test",
 	Image:       "fnproject/hello",
 	Type:        "sync",

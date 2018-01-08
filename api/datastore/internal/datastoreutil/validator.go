@@ -86,8 +86,8 @@ func (v *validator) InsertRoute(ctx context.Context, route *models.Route) (*mode
 	if route == nil {
 		return nil, models.ErrDatastoreEmptyRoute
 	}
-	if route.AppName == "" {
-		return nil, models.ErrDatastoreEmptyAppName
+	if route.AppID == "" {
+		return nil, models.ErrDatastoreEmptyApp
 	}
 	if route.Path == "" {
 		return nil, models.ErrDatastoreEmptyRoutePath
@@ -101,8 +101,8 @@ func (v *validator) UpdateRoute(ctx context.Context, newroute *models.Route) (*m
 	if newroute == nil {
 		return nil, models.ErrDatastoreEmptyRoute
 	}
-	if newroute.AppName == "" {
-		return nil, models.ErrDatastoreEmptyAppName
+	if newroute.AppID == "" {
+		return nil, models.ErrDatastoreEmptyApp
 	}
 	if newroute.Path == "" {
 		return nil, models.ErrDatastoreEmptyRoutePath

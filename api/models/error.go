@@ -120,7 +120,7 @@ var (
 		code:  http.StatusBadRequest,
 		error: errors.New("Invalid route Format"),
 	}
-	ErrRoutesMissingAppName = err{
+	ErrRoutesMissingAppID = err{
 		code:  http.StatusBadRequest,
 		error: errors.New("Missing route AppName"),
 	}
