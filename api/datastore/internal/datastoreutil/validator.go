@@ -53,12 +53,12 @@ func (v *validator) UpdateApp(ctx context.Context, app *models.App) (*models.App
 }
 
 // name will never be empty.
-func (v *validator) RemoveApp(ctx context.Context, name string) error {
-	if name == "" {
-		return models.ErrDatastoreEmptyAppName
+func (v *validator) RemoveApp(ctx context.Context, app *models.App) error {
+	if app.ID == "" || app.Name == "" {
+		return models.ErrDatastoreEmptyApp
 	}
 
-	return v.Datastore.RemoveApp(ctx, name)
+	return v.Datastore.RemoveApp(ctx, app)
 }
 
 // appName and routePath will never be empty.
