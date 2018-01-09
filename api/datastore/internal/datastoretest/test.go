@@ -336,8 +336,8 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 
 		// Testing get app
 		_, err = ds.GetApp(ctx, &models.App{})
-		if err != models.ErrDatastoreEmptyApp {
-			t.Fatalf("Test GetApp: expected error to be %v, but it was %s", models.ErrDatastoreEmptyApp, err)
+		if err != models.ErrDatastoreEmptyAppName {
+			t.Fatalf("Test GetApp: expected error to be %v, but it was %s", models.ErrDatastoreEmptyAppName, err)
 		}
 
 		ga := &models.App{Name: testApp.Name}
@@ -426,8 +426,8 @@ func Test(t *testing.T, dsf func(t *testing.T) models.Datastore) {
 
 		// Testing app delete
 		err = ds.RemoveApp(ctx, &models.App{})
-		if err != models.ErrDatastoreEmptyApp {
-			t.Fatalf("Test RemoveApp: expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyApp, err)
+		if err != models.ErrDatastoreEmptyAppName {
+			t.Fatalf("Test RemoveApp: expected error `%v`, but it was `%v`", models.ErrDatastoreEmptyAppName, err)
 		}
 
 		err = ds.RemoveApp(ctx, testApp)
