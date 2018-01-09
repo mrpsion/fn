@@ -91,10 +91,9 @@ func FromRequest(app *models.App, path string, req *http.Request) CallOpt {
 		}
 
 		c.Call = &models.Call{
-			ID:      id,
-			AppName: app.Name,
-			Path:    route.Path,
-			Image:   route.Image,
+			ID:    id,
+			Path:  route.Path,
+			Image: route.Image,
 			// Delay: 0,
 			Type:   route.Type,
 			Format: route.Format,
@@ -203,11 +202,11 @@ func (a *agent) GetCall(opts ...CallOpt) (Call, error) {
 	c.ct = a
 
 	ctx, _ := common.LoggerWithFields(c.req.Context(),
-		logrus.Fields{"id": c.ID, "app": c.AppName, "route": c.Path})
+		logrus.Fields{"id": c.ID, "app_id": c.AppID, "route": c.Path})
 	c.req = c.req.WithContext(ctx)
 
 	// setup stderr logger separate (don't inherit ctx vars)
-	logger := logrus.WithFields(logrus.Fields{"user_log": true, "app_name": c.AppName, "path": c.Path, "image": c.Image, "call_id": c.ID})
+	logger := logrus.WithFields(logrus.Fields{"user_log": true, "app_id": c.AppID, "path": c.Path, "image": c.Image, "call_id": c.ID})
 	c.stderr = setupLogger(logger)
 	if c.w == nil {
 		// send STDOUT to logs if no writer given (async...)
