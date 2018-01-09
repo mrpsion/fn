@@ -109,8 +109,8 @@ func TestCallConfigurationRequest(t *testing.T) {
 	if model.ID == "" {
 		t.Fatal("model does not have id, GetCall should assign id")
 	}
-	if model.AppName != appName {
-		t.Fatal("app name mismatch", model.AppName, appName)
+	if model.AppID != app.ID {
+		t.Fatal("app ID mismatch", model.ID, app.ID)
 	}
 	if model.Path != path {
 		t.Fatal("path mismatch", model.Path, path)
@@ -179,7 +179,8 @@ func TestCallConfigurationRequest(t *testing.T) {
 }
 
 func TestCallConfigurationModel(t *testing.T) {
-	appName := "myapp"
+	app := &models.App{Name: "myapp"}
+	app.SetDefaults()
 	path := "/sleeper"
 	image := "fnproject/sleeper"
 	const timeout = 1
@@ -187,13 +188,13 @@ func TestCallConfigurationModel(t *testing.T) {
 	const memory = 256
 	CPUs := models.MilliCPUs(1000)
 	method := "GET"
-	url := "http://127.0.0.1:8080/r/" + appName + path
+	url := "http://127.0.0.1:8080/r/" + app.Name + path
 	payload := "payload"
 	typ := "sync"
 	format := "default"
 	cfg := models.Config{
 		"FN_FORMAT":   format,
-		"FN_APP_NAME": appName,
+		"FN_APP_NAME": app.Name,
 		"FN_PATH":     path,
 		"FN_MEMORY":   strconv.Itoa(memory),
 		"FN_CPUS":     CPUs.String(),
@@ -204,7 +205,7 @@ func TestCallConfigurationModel(t *testing.T) {
 
 	cm := &models.Call{
 		Config:      cfg,
-		AppName:     appName,
+		AppID:       app.ID,
 		Path:        path,
 		Image:       image,
 		Type:        typ,
@@ -240,7 +241,8 @@ func TestCallConfigurationModel(t *testing.T) {
 }
 
 func TestAsyncCallHeaders(t *testing.T) {
-	appName := "myapp"
+	app := &models.App{Name: "myapp"}
+	app.SetDefaults()
 	path := "/sleeper"
 	image := "fnproject/sleeper"
 	const timeout = 1
@@ -248,7 +250,7 @@ func TestAsyncCallHeaders(t *testing.T) {
 	const memory = 256
 	CPUs := models.MilliCPUs(200)
 	method := "GET"
-	url := "http://127.0.0.1:8080/r/" + appName + path
+	url := "http://127.0.0.1:8080/r/" + app.Name + path
 	payload := "payload"
 	typ := "async"
 	format := "http"
@@ -256,7 +258,7 @@ func TestAsyncCallHeaders(t *testing.T) {
 	contentLength := strconv.FormatInt(int64(len(payload)), 10)
 	config := map[string]string{
 		"FN_FORMAT":   format,
-		"FN_APP_NAME": appName,
+		"FN_APP_NAME": app.ID,
 		"FN_PATH":     path,
 		"FN_MEMORY":   strconv.Itoa(memory),
 		"FN_CPUS":     CPUs.String(),
@@ -267,14 +269,14 @@ func TestAsyncCallHeaders(t *testing.T) {
 	}
 	headers := map[string][]string{
 		// FromRequest would insert these from original HTTP request
-		"Content-Type":   []string{contentType},
-		"Content-Length": []string{contentLength},
+		"Content-Type":   {contentType},
+		"Content-Length": {contentLength},
 	}
 
 	cm := &models.Call{
 		Config:      config,
 		Headers:     headers,
-		AppName:     appName,
+		AppID:       app.ID,
 		Path:        path,
 		Image:       image,
 		Type:        typ,
@@ -343,7 +345,9 @@ func TestLoggerIsStringerAndWorks(t *testing.T) {
 }
 
 func TestSubmitError(t *testing.T) {
-	appName := "myapp"
+	app := &models.App{Name: "myapp"}
+	app.SetDefaults()
+
 	path := "/error"
 	image := "fnproject/error"
 	const timeout = 10
@@ -351,13 +355,13 @@ func TestSubmitError(t *testing.T) {
 	const memory = 256
 	CPUs := models.MilliCPUs(200)
 	method := "GET"
-	url := "http://127.0.0.1:8080/r/" + appName + path
+	url := "http://127.0.0.1:8080/r/" + app.Name + path
 	payload := "payload"
 	typ := "sync"
 	format := "default"
 	config := map[string]string{
 		"FN_FORMAT":   format,
-		"FN_APP_NAME": appName,
+		"FN_APP_NAME": app.Name,
 		"FN_PATH":     path,
 		"FN_MEMORY":   strconv.Itoa(memory),
 		"FN_CPUS":     CPUs.String(),
@@ -369,7 +373,7 @@ func TestSubmitError(t *testing.T) {
 
 	cm := &models.Call{
 		Config:      config,
-		AppName:     appName,
+		AppID:       app.ID,
 		Path:        path,
 		Image:       image,
 		Type:        typ,
