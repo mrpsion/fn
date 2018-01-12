@@ -50,6 +50,14 @@ func (v *validator) GetApp(ctx context.Context, app *models.App) (*models.App, e
 	return v.Datastore.GetApp(ctx, app)
 }
 
+func (v *validator) GetAppByID(ctx context.Context, appID string) (*models.App, error) {
+	if appID == "" {
+		return nil, models.ErrDatastoreEmptyAppID
+	}
+
+	return v.Datastore.GetAppByID(ctx, appID)
+}
+
 func (v *validator) GetApps(ctx context.Context, appFilter *models.AppFilter) ([]*models.App, error) {
 	return v.Datastore.GetApps(ctx, appFilter)
 }
@@ -85,17 +93,15 @@ func (v *validator) RemoveApp(ctx context.Context, app *models.App) error {
 }
 
 // appName and routePath will never be empty.
-func (v *validator) GetRoute(ctx context.Context, app *models.App, routePath string) (*models.Route, error) {
-	err := checkApp(app)
-	if err != nil {
-		return nil, err
+func (v *validator) GetRoute(ctx context.Context, appID, routePath string) (*models.Route, error) {
+	if appID == "" {
+		return nil, models.ErrDatastoreEmptyAppID
 	}
-
 	if routePath == "" {
 		return nil, models.ErrDatastoreEmptyRoutePath
 	}
 
-	return v.Datastore.GetRoute(ctx, app, routePath)
+	return v.Datastore.GetRoute(ctx, appID, routePath)
 }
 
 // appName will never be empty

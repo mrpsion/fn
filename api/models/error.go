@@ -68,6 +68,10 @@ var (
 		code:  http.StatusBadRequest,
 		error: errors.New("Missing app"),
 	}
+	ErrDatastoreEmptyAppID = err{
+		code:  http.StatusBadRequest,
+		error: errors.New("Missing app ID"),
+	}
 	ErrDatastoreEmptyRoute = err{
 		code:  http.StatusBadRequest,
 		error: errors.New("Missing route"),

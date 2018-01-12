@@ -602,7 +602,7 @@ func (a *agent) runHot(ctxArg context.Context, call *call, tok ResourceToken) {
 	// set up the stderr for the first one to capture any logs before the slot is
 	// executed and between hot functions TODO this is still a little tobias funke
 	stderr := newLineWriter(&logWriter{
-		logrus.WithFields(logrus.Fields{"between_log": true, "app_name": call.AppID, "path": call.Path, "image": call.Image, "container_id": cid}),
+		logrus.WithFields(logrus.Fields{"between_log": true, "app_id": call.AppID, "path": call.Path, "image": call.Image, "container_id": cid}),
 	})
 
 	container := &container{
