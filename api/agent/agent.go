@@ -101,6 +101,9 @@ type Agent interface {
 	// Enqueue is to use the agent's sweet sweet client bindings to remotely
 	// queue async tasks and should be removed from Agent interface ASAP.
 	Enqueue(context.Context, *models.Call) error
+
+	GetAppByID(ctx context.Context, appID string) (*models.App, error)
+	GetApp(ctx context.Context, app *models.App) (*models.App, error)
 }
 
 type agent struct {
@@ -142,6 +145,14 @@ func New(da DataAccess) Agent {
 	go a.asyncDequeue() // safe shutdown can nanny this fine
 
 	return a
+}
+
+func (a *agent) GetApp(ctx context.Context, app *models.App) (*models.App, error) {
+	return a.da.GetApp(ctx, app)
+}
+
+func (a *agent) GetAppByID(ctx context.Context, appID string) (*models.App, error) {
+	return a.da.GetAppByID(ctx, appID)
 }
 
 // TODO shuffle this around somewhere else (maybe)
