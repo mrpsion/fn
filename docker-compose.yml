@@ -9,7 +9,7 @@ services:
       - MINIO_ACCESS_KEY=admin
       - MINIO_SECRET_KEY=password
     volumes:
-      - ./data/logstore:/data
+      - /data/logstore:/data
     command: server /data
   db:
     image: "mysql"
@@ -20,7 +20,7 @@ services:
       - "MYSQL_DATABASE=funcs"
       - "MYSQL_ROOT_PASSWORD=root"
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - /data/mysql:/var/lib/mysql
   mq:
     image: "redis"
     restart: always
@@ -66,7 +66,7 @@ services:
     links:
       - fnserver
     volumes:
-      - ./examples/grafana/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /data/grafana/prometheus.yml:/etc/prometheus/prometheus.yml
   fnserver-ui:
     depends_on:
       - fnserver
